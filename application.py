@@ -491,103 +491,160 @@ elif page == "🧠 Modélisation":
 # PAGE 4 - PREDICTION
 # ----------------------------------------------------------------------------
 elif page == "🔮 Prédiction":
-    st.markdown('<p class="main-header">🔮 Prédiction d\'un Nouveau Dossier</p>',
-                unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Renseignez les informations du demandeur pour '
-                'obtenir une prédiction instantanée</p>', unsafe_allow_html=True)
 
-    if not st.session_state.results:
-        st.warning("⚠️ Veuillez d'abord entraîner un modèle dans l'onglet **'🧠 Modélisation'**.")
-    else:
-        model_name = st.selectbox(
-            "Modèle à utiliser pour la prédiction",
-            list(st.session_state.results.keys()),
-            index=list(st.session_state.results.keys()).index(st.session_state.best_model_name)
-        )
-        model = st.session_state.results[model_name]["model"]
+    st.markdown(
+        '<p class="main-header">🔮 Prédiction d\'un Nouveau Dossier</p>',
+        unsafe_allow_html=True
+    )
 
-        with st.form("prediction_form"):
-            st.subheader("Informations du demandeur")
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                gender = st.selectbox("Genre", ["Male", "Female"])
-                married = st.selectbox("Marié(e)", ["Yes", "No"])
-                dependents = st.selectbox("Nombre de personnes à charge", ["0", "1", "2", "3+"])
-            with c2:
-                education = st.selectbox("Niveau d'éducation", ["Graduate", "Not Graduate"])
-                self_employed = st.selectbox("Travailleur indépendant", ["No", "Yes"])
-                property_area = st.selectbox("Zone du bien", ["Urban", "Semiurban", "Rural"])
-            with c3:
-                credit_history = st.selectbox("Historique de crédit favorable",
-                                               ["Oui", "Non"])
-                loan_term = st.selectbox("Durée du prêt (jours)",
-                                          [360, 180, 120, 84, 300, 60, 36])
+    st.markdown(
+        "Renseignez les informations du demandeur puis cliquez sur **Prédire**."
+    )
 
-            st.subheader("Informations financières")
-            c4, c5, c6 = st.columns(3)
-            with c4:
-                applicant_income = st.number_input("Revenu du demandeur ($)",
-                                                    min_value=0, value=5000, step=100)
-            with c5:
-                coapplicant_income = st.number_input("Revenu du co-demandeur ($)",
-                                                       min_value=0, value=0, step=100)
-            with c6:
-                loan_amount = st.number_input("Montant du prêt (en milliers $)",
-                                               min_value=0, value=150, step=5)
+    with st.form("prediction_form"):
 
-            submitted = st.form_submit_button("🔎 Prédire l'octroi du prêt")
+        st.subheader("Informations personnelles")
 
-        if submitted:
-            new_data = pd.DataFrame([{
-                "Gender": gender,
-                "Married": married,
-                "Dependents": dependents,
-                "Education": education,
-                "Self_Employed": self_employed,
-                "ApplicantIncome": applicant_income,
-                "CoapplicantIncome": coapplicant_income,
-                "LoanAmount": loan_amount,
-                "Loan_Amount_Term": float(loan_term),
-                "Credit_History": 1.0 if credit_history == "Oui" else 0.0,
-                "Property_Area": property_area,
-            }])
+        col1, col2, col3 = st.columns(3)
 
-            X_new, _, _, _ = preprocess(
-                new_data, fit=False,
-                encoders=st.session_state.encoders,
-                imputers=st.session_state.imputers
+        with col1:
+
+            gender = st.selectbox("Genre", ["Male", "Female"])
+
+            married = st.selectbox("Marié(e)", ["Yes", "No"])
+
+            dependents = st.selectbox(
+                "Personnes à charge",
+                ["0", "1", "2", "3+"]
             )
-            pred = model.predict(X_new)[0]
-            proba = model.predict_proba(X_new)[0]
 
-            st.markdown("---")
-            st.subheader("Résultat de la prédiction")
-            c1, c2 = st.columns([1, 1.5])
-            with c1:
-                if pred == 1:
-                    st.success("###  PRÊT APPROUVÉ")
-                else:
-                    st.error("###  PRÊT REFUSÉ")
-                st.metric("Confiance du modèle", f"{max(proba) * 100:.1f}%")
-                st.caption(f"Modèle utilisé : {model_name}")
-            with c2:
-                fig_gauge = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=proba[1] * 100,
-                    title={"text": "Probabilité d'approbation (%)"},
-                    gauge={
-                        "axis": {"range": [0, 100]},
-                        "bar": {"color": "#1a3c6e"},
-                        "steps": [
-                            {"range": [0, 40], "color": "#fde2e1"},
-                            {"range": [40, 70], "color": "#fff3cd"},
-                            {"range": [70, 100], "color": "#d4edda"},
-                        ],
-                    }
-                ))
-                fig_gauge.update_layout(height=280, margin=dict(t=50, b=10, l=20, r=20))
-                st.plotly_chart(fig_gauge, use_container_width=True)
+        with col2:
 
-            st.info(" Cette prédiction est fournie à titre indicatif et repose sur un "
-                    "modèle statistique. Elle ne remplace pas l'analyse d'un conseiller "
-                    "financier qualifié.")
+            education = st.selectbox(
+                "Niveau d'étude",
+                ["Graduate", "Not Graduate"]
+            )
+
+            self_employed = st.selectbox(
+                "Travailleur indépendant",
+                ["No", "Yes"]
+            )
+
+            property_area = st.selectbox(
+                "Zone",
+                ["Urban", "Semiurban", "Rural"]
+            )
+
+        with col3:
+
+            credit_history = st.selectbox(
+                "Historique de crédit",
+                ["Oui", "Non"]
+            )
+
+            loan_term = st.selectbox(
+                "Durée du prêt",
+                [360, 180, 120, 84, 300, 60, 36]
+            )
+
+        st.divider()
+
+        st.subheader("Informations financières")
+
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+
+            applicant_income = st.number_input(
+                "Revenu du demandeur",
+                min_value=0,
+                value=5000
+            )
+
+        with c2:
+
+            coapplicant_income = st.number_input(
+                "Revenu du co-demandeur",
+                min_value=0,
+                value=0
+            )
+
+        with c3:
+
+            loan_amount = st.number_input(
+                "Montant du prêt",
+                min_value=0,
+                value=150
+            )
+
+        submitted = st.form_submit_button("🔎 Prédire")
+
+    if submitted:
+
+        st.success(" Formulaire validé avec succès.")
+
+        # st.write("### Données saisies")
+
+        # st.json({
+        #     "Gender": gender,
+        #     "Married": married,
+        #     "Dependents": dependents,
+        #     "Education": education,
+        #     "Self_Employed": self_employed,
+        #     "ApplicantIncome": applicant_income,
+        #     "CoapplicantIncome": coapplicant_income,
+        #     "LoanAmount": loan_amount,
+        #     "Loan_Amount_Term": loan_term,
+        #     "Credit_History": 1 if credit_history == "Oui" else 0,
+        #     "Property_Area": property_area
+        # }
+        # )
+
+st.divider()
+
+st.subheader("Résultat de la prédiction")
+
+# Exemple temporaire
+prediction = 1
+probability = 0.85
+
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    if prediction == 1:
+        st.success("## ✅ PRÊT APPROUVÉ")
+    else:
+        st.error("## ❌ PRÊT REFUSÉ")
+
+
+    st.metric(
+        "Confiance du modèle",
+        f"{probability*100:.2f}%"
+    )
+
+
+with col2:
+
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=probability*100,
+            title={
+                "text": "Probabilité d'approbation"
+            },
+            gauge={
+                "axis": {
+                    "range": [0,100]
+                }
+            }
+        )
+    )
+
+    fig.update_layout(height=300)
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
