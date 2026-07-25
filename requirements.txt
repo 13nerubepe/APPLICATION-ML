@@ -7,3 +7,8 @@ numpy
 joblib
 xgboost
 imbalanced-learn
+
+fastapi
+uvicorn
+joblib
+pydantic

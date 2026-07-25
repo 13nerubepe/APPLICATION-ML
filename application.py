@@ -23,6 +23,9 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, roc_curve, auc
 )
+
+
+
 import io
 
 # ----------------------------------------------------------------------------
@@ -241,7 +244,7 @@ if "best_model_name" not in st.session_state:
 # ----------------------------------------------------------------------------
 # BARRE LATERALE - NAVIGATION
 # ----------------------------------------------------------------------------
-st.sidebar.markdown("## 🏦 Loan Predictor")
+st.sidebar.markdown("## 🏦 PREDICTION BANCAIRE")
 st.sidebar.markdown("---")
 page = st.sidebar.radio(
     "Navigation",
@@ -257,14 +260,14 @@ if uploaded_file is not None:
     st.session_state.df = pd.read_csv(uploaded_file)
 elif st.session_state.df is None:
     st.session_state.df = generate_sample_data()
-    st.sidebar.info("Jeu de données de démonstration chargé.")
+    # st.sidebar.info("Jeu de données de démonstration chargé.")
 
-if st.sidebar.button("🔄 Régénérer les données de démo"):
-    st.session_state.df = generate_sample_data(seed=np.random.randint(0, 10000))
-    st.session_state.results = None
+# if st.sidebar.button("🔄 Régénérer les données de démo"):
+#     st.session_state.df = generate_sample_data(seed=np.random.randint(0, 10000))
+#     st.session_state.results = None
 
-st.sidebar.markdown("---")
-st.sidebar.caption("Développé avec Streamlit • Machine Learning")
+# st.sidebar.markdown("---")
+# st.sidebar.caption("Développé avec Streamlit • Machine Learning")
 
 df = st.session_state.df
 
@@ -274,8 +277,8 @@ df = st.session_state.df
 if page == "🏠 Accueil":
     st.markdown('<p class="main-header">🏦 Système de Prédiction d\'Octroi de Prêt</p>',
                 unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Une solution intelligente d\'aide à la décision pour '
-                'les institutions financières</p>', unsafe_allow_html=True)
+    # st.markdown('<p class="sub-header">Une solution intelligente d\'aide à la décision pour '
+    #             'les institutions financières</p>', unsafe_allow_html=True)
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -299,16 +302,16 @@ if page == "🏠 Accueil":
             "critères tels que le revenu, l'historique de crédit, la situation "
             "matrimoniale ou encore la zone de résidence du demandeur."
         )
-        st.write("**Fonctionnalités principales :**")
-        st.markdown("""
-        - 📊 Exploration et visualisation des données, y compris les valeurs manquantes
-        - 🧹 Prétraitement automatique (imputation, encodage)
-        - 🧠 Entraînement et comparaison de plusieurs modèles de Machine Learning
-        - 🔮 Prédiction instantanée pour un nouveau dossier de prêt
-        """)
-        st.info("💡 Utilisez le menu de gauche pour naviguer entre les différentes sections, "
-                "ou chargez votre propre fichier CSV.")
-    with c2:
+    #     st.write("**Fonctionnalités principales :**")
+    #     st.markdown("""
+    #     - 📊 Exploration et visualisation des données, y compris les valeurs manquantes
+    #     - 🧹 Prétraitement automatique (imputation, encodage)
+    #     - 🧠 Entraînement et comparaison de plusieurs modèles de Machine Learning
+    #     - 🔮 Prédiction instantanée pour un nouveau dossier de prêt
+    #     """)
+    #     st.info("💡 Utilisez le menu de gauche pour naviguer entre les différentes sections, "
+    #             "ou chargez votre propre fichier CSV.")
+    # with c2:
         if TARGET in df.columns:
             fig = px.pie(df, names=TARGET, hole=0.5,
                          color=TARGET,
