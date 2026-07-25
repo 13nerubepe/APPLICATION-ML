@@ -735,29 +735,32 @@ elif page == "📊 Exploration des données":
 # ----------------------------------------------------------------------------
 # PAGE 3 - MODELISATION
 # ----------------------------------------------------------------------------
-elif page == " Modélisation":
+elif page == "🧠 Modélisation":
 
     st.markdown(
-        '<p class="main-header"> Laboratoire de Modélisation IA</p>',
+        '<p class="main-header">🧠 Laboratoire de Modélisation IA</p>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         """
         <div style="
-        background:#f8fafc;
-        padding:20px;
-        border-radius:15px;
+        background:linear-gradient(135deg,#f8fafc,#eef2ff);
+        padding:25px;
+        border-radius:18px;
         border:1px solid #e5e7eb;
-        margin-bottom:20px;
+        margin-bottom:25px;
         ">
 
-        <h3> Entraînement des modèles Machine Learning</h3>
+        <h3 style="color:#1a3c6e;">
+         Entraînement des modèles Machine Learning
+        </h3>
 
-        <p>
-        Cette section permet de préparer les données, entraîner plusieurs
-        algorithmes de classification et sélectionner le modèle le plus performant
-        pour prédire l'octroi d'un prêt bancaire.
+        <p style="color:#374151;font-size:16px;">
+        Cette section permet de préparer les données bancaires,
+        entraîner plusieurs algorithmes de classification,
+        comparer leurs performances et sélectionner le modèle
+        le plus efficace pour prédire l'octroi d'un prêt.
         </p>
 
         </div>
@@ -769,17 +772,17 @@ elif page == " Modélisation":
     if TARGET not in df.columns:
 
         st.error(
-            " La colonne cible Loan_Status est absente."
+            "❌ La colonne cible Loan_Status est absente du dataset."
         )
 
-    else:
 
+    else:
 
         # ============================
         # PARAMETRES
         # ============================
 
-        st.subheader(" Configuration de l'entraînement")
+        st.subheader("⚙️ Configuration de l'entraînement")
 
 
         col1, col2, col3 = st.columns(3)
@@ -788,19 +791,20 @@ elif page == " Modélisation":
         with col1:
 
             test_size = st.slider(
-                "Taille du jeu de test",
-                0.1,
-                0.4,
-                0.2,
-                0.05
+                "📌 Taille du jeu de test",
+                min_value=0.1,
+                max_value=0.4,
+                value=0.2,
+                step=0.05
             )
 
 
         with col2:
 
             random_state = st.number_input(
-                "Random State",
-                value=42
+                "🎲 Random State",
+                value=42,
+                step=1
             )
 
 
@@ -808,25 +812,23 @@ elif page == " Modélisation":
 
             st.info(
                 """
-                 Objectif :
+                🎯 Objectif
 
-                Trouver le modèle avec le meilleur F1-score.
+                Sélectionner le modèle avec
+                le meilleur F1-score.
                 """
             )
-
 
 
         st.divider()
 
 
-
         # ============================
-        # ENTRAINEMENT
+        # BOUTON ENTRAINEMENT
         # ============================
-
 
         if st.button(
-            " Lancer l'entraînement",
+            "🚀 Lancer l'entraînement",
             use_container_width=True
         ):
 
@@ -868,10 +870,12 @@ elif page == " Modélisation":
 
 
                 results = train_models(
+
                     X_train,
                     X_test,
                     y_train,
                     y_test
+
                 )
 
 
@@ -887,11 +891,13 @@ elif page == " Modélisation":
 
                 st.session_state.y_test = y_test
 
+                st.session_state.X_columns = X.columns
+
 
 
                 best = max(
                     results,
-                    key=lambda k: results[k]["f1"]
+                    key=lambda x: results[x]["f1"]
                 )
 
 
@@ -909,40 +915,28 @@ elif page == " Modélisation":
 
 
         # ============================
-        # RESULTATS
+        # AFFICHAGE RESULTATS
         # ============================
-
 
         if st.session_state.results:
 
 
             results = st.session_state.results
 
-
-
             best_model = st.session_state.best_model_name
 
-
-
-            best_score = results[best_model]["f1"]
-
-
-
-            # KPI CARDS
 
             col1,col2,col3,col4 = st.columns(4)
 
 
             with col1:
-
                 st.metric(
-                    " Modèles testés",
+                    "🤖 Modèles testés",
                     len(results)
                 )
 
 
             with col2:
-
                 st.metric(
                     "🏆 Meilleur modèle",
                     best_model
@@ -950,18 +944,16 @@ elif page == " Modélisation":
 
 
             with col3:
-
                 st.metric(
                     "⭐ F1-score",
-                    f"{best_score:.3f}"
+                    f"{results[best_model]['f1']:.3f}"
                 )
 
 
             with col4:
-
                 st.metric(
-                    "📂 Variables",
-                    X.shape[1]
+                    "📊 Variables",
+                    len(st.session_state.X_columns)
                 )
 
 
@@ -972,18 +964,18 @@ elif page == " Modélisation":
 
             tab1,tab2,tab3,tab4 = st.tabs(
                 [
-                    " Performances",
-                    " Matrice confusion",
-                    " Courbe ROC",
-                    " Importance variables"
+                    "📈 Performances",
+                    "🎯 Matrice confusion",
+                    "📉 Courbe ROC",
+                    "🔍 Importance variables"
                 ]
             )
 
 
 
-            # -------------------------
+            # ============================
             # PERFORMANCE
-            # -------------------------
+            # ============================
 
             with tab1:
 
@@ -991,13 +983,9 @@ elif page == " Modélisation":
                 comp_df = pd.DataFrame({
 
                     name:{
-
                         "Accuracy":r["accuracy"],
-
                         "Precision":r["precision"],
-
                         "Recall":r["recall"],
-
                         "F1-score":r["f1"]
 
                     }
@@ -1010,8 +998,7 @@ elif page == " Modélisation":
 
                 st.dataframe(
 
-                    comp_df.style
-                    .highlight_max(
+                    comp_df.style.highlight_max(
                         axis=0,
                         color="#bbf7d0"
                     ),
@@ -1049,19 +1036,17 @@ elif page == " Modélisation":
 
 
 
-            # -------------------------
+            # ============================
             # MATRICE CONFUSION
-            # -------------------------
+            # ============================
 
             with tab2:
 
 
-                model_choice = st.selectbox(
-
+                choix = st.selectbox(
                     "Choisir un modèle",
-
-                    list(results.keys())
-
+                    list(results.keys()),
+                    key="cm"
                 )
 
 
@@ -1069,10 +1054,9 @@ elif page == " Modélisation":
 
                     st.session_state.y_test,
 
-                    results[model_choice]["y_pred"]
+                    results[choix]["y_pred"]
 
                 )
-
 
 
                 fig_cm = px.imshow(
@@ -1084,42 +1068,31 @@ elif page == " Modélisation":
                     color_continuous_scale="Blues",
 
                     labels={
-
                         "x":"Prédit",
-
                         "y":"Réel"
-
                     }
 
                 )
 
 
                 st.plotly_chart(
-
                     fig_cm,
-
                     use_container_width=True
-
                 )
 
 
 
-
-            # -------------------------
+            # ============================
             # ROC
-            # -------------------------
+            # ============================
 
             with tab3:
 
 
-                model_choice = st.selectbox(
-
-                    "Modèle ROC",
-
+                choix = st.selectbox(
+                    "Choisir un modèle",
                     list(results.keys()),
-
                     key="roc"
-
                 )
 
 
@@ -1127,7 +1100,7 @@ elif page == " Modélisation":
 
                     st.session_state.y_test,
 
-                    results[model_choice]["y_proba"]
+                    results[choix]["y_proba"]
 
                 )
 
@@ -1139,88 +1112,45 @@ elif page == " Modélisation":
                 fig = go.Figure()
 
 
-
                 fig.add_trace(
-
                     go.Scatter(
-
                         x=fpr,
-
                         y=tpr,
-
                         mode="lines",
-
-                        name=f"AUC={roc_auc:.3f}"
-
+                        name=f"AUC = {roc_auc:.3f}"
                     )
-
                 )
-
-
-
-                fig.add_trace(
-
-                    go.Scatter(
-
-                        x=[0,1],
-
-                        y=[0,1],
-
-                        mode="lines",
-
-                        line=dict(
-                            dash="dash"
-                        )
-
-                    )
-
-                )
-
 
 
                 fig.update_layout(
-
                     title="Courbe ROC",
-
                     xaxis_title="Faux positifs",
-
                     yaxis_title="Vrais positifs"
-
                 )
-
 
 
                 st.plotly_chart(
-
                     fig,
-
                     use_container_width=True
-
                 )
 
 
 
-
-            # -------------------------
-            # IMPORTANCE
-            # -------------------------
+            # ============================
+            # IMPORTANCE VARIABLES
+            # ============================
 
             with tab4:
 
 
-                model_choice = st.selectbox(
-
-                    "Modèle",
-
+                choix = st.selectbox(
+                    "Choisir un modèle",
                     list(results.keys()),
-
                     key="importance"
-
                 )
 
 
-                selected = results[model_choice]["model"]
-
+                selected = results[choix]["model"]
 
 
                 if hasattr(
@@ -1229,26 +1159,23 @@ elif page == " Modélisation":
                 ):
 
 
-                    imp = pd.DataFrame({
+                    imp_df = pd.DataFrame({
 
-                        "Variable":X.columns,
+                        "Variable":
+                        st.session_state.X_columns,
 
                         "Importance":
                         selected.feature_importances_
 
                     }).sort_values(
-
                         "Importance",
-
                         ascending=True
-
                     )
-
 
 
                     fig = px.bar(
 
-                        imp,
+                        imp_df,
 
                         x="Importance",
 
@@ -1261,28 +1188,23 @@ elif page == " Modélisation":
                     )
 
 
-
                     st.plotly_chart(
-
                         fig,
-
                         use_container_width=True
-
                     )
 
 
                 else:
 
                     st.warning(
-                        "Ce modèle ne fournit pas d'importance des variables."
+                        "⚠️ Ce modèle ne possède pas d'importance des variables."
                     )
-
 
 
         else:
 
             st.info(
-                " Cliquez sur 'Lancer l'entraînement' pour commencer."
+                "👆 Cliquez sur 'Lancer l'entraînement' pour commencer."
             )
 
 # ----------------------------------------------------------------------------
