@@ -271,6 +271,27 @@ if "imputers" not in st.session_state:
 if "best_model_name" not in st.session_state:
     st.session_state.best_model_name = None
 
+if "historique_predictions" not in st.session_state:
+    st.session_state.historique_predictions = pd.DataFrame(
+        columns=[
+            "Date",
+            "Gender",
+            "Married",
+            "Dependents",
+            "Education",
+            "Self_Employed",
+            "ApplicantIncome",
+            "CoapplicantIncome",
+            "LoanAmount",
+            "Loan_Amount_Term",
+            "Credit_History",
+            "Property_Area",
+            "Decision",
+            "Probabilité approbation",
+            "Confiance"
+        ]
+    )
+
 # ----------------------------------------------------------------------------
 # BARRE LATERALE - NAVIGATION
 # ----------------------------------------------------------------------------
@@ -278,7 +299,7 @@ st.sidebar.markdown("## 🏦 PREDICTION BANCAIRE")
 st.sidebar.markdown("---")
 page = st.sidebar.radio(
     "Navigation",
-    ["🏠 Accueil", "📊 Exploration des données", "🧠 Modélisation", "🔮 Prédiction"],
+    ["🏠 Accueil", "📊 Exploration des données", "🧠 Modélisation","📋 Historique des prédictions", "🔮 Prédiction"],
     label_visibility="collapsed"
 )
 
@@ -638,47 +659,48 @@ elif page == "🔮 Prédiction":
                 value=150
             )
 
+        # Vérification des champs obligatoires
+        formulaire_valide = (
+        gender != "-- Sélectionner --"
+        and married != "-- Sélectionner --"
+        and dependents != "-- Sélectionner --"
+        and education != "-- Sélectionner --"
+        and self_employed != "-- Sélectionner --"
+        and property_area != "-- Sélectionner --"
+        and credit_history != "-- Sélectionner --"
+        and applicant_income > 0
+        and loan_amount > 0
+        )
 
         submitted = st.form_submit_button(
-            "🔎 Prédire"
+            "Valider la Prédiction" ,
+            disabled=not formulaire_valide
         )
 
 
 
-    if submitted:
+        if submitted:
 
+        # ==============================
+        # CREATION DES DONNEES CLIENT
+        # ==============================
 
-        # Création dataframe nouveau client
+            new_data = pd.DataFrame([{
 
-        new_data = pd.DataFrame([{
+            "Gender": gender,
+            "Married": married,
+            "Dependents": dependents,
+            "Education": education,
+            "Self_Employed": self_employed,
+            "ApplicantIncome": applicant_income,
+            "CoapplicantIncome": coapplicant_income,
+            "LoanAmount": loan_amount,
+            "Loan_Amount_Term": float(loan_term),
+            "Credit_History": 1.0 if credit_history == "Oui" else 0.0,
+            "Property_Area": property_area
 
-            "Gender":gender,
+            }])
 
-            "Married":married,
-
-            "Dependents":dependents,
-
-            "Education":education,
-
-            "Self_Employed":self_employed,
-
-            "ApplicantIncome":applicant_income,
-
-            "CoapplicantIncome":coapplicant_income,
-
-            "LoanAmount":loan_amount,
-
-            "Loan_Amount_Term":float(loan_term),
-
-            "Credit_History":
-                1.0 if credit_history=="Oui" else 0.0,
-
-            "Property_Area":property_area
-
-        }])
-
-
-        # Variables EXACTES utilisées pendant entraînement
 
         var_num = [
             "ApplicantIncome",
@@ -699,11 +721,9 @@ elif page == "🔮 Prédiction":
         ]
 
 
-
-        # ==========================
+        # ==============================
         # PRETRAITEMENT
-        # ==========================
-
+        # ==============================
 
         new_data[var_num] = imputer_num.transform(
             new_data[var_num]
@@ -715,17 +735,14 @@ elif page == "🔮 Prédiction":
         )
 
 
-
         X_num = scaler.transform(
             new_data[var_num]
         )
 
 
-
         X_cat = encoder.transform(
             new_data[var_cat]
         )
-
 
 
         X_final = np.hstack(
@@ -736,11 +753,9 @@ elif page == "🔮 Prédiction":
         )
 
 
-
-        # ==========================
+        # ==============================
         # PREDICTION
-        # ==========================
-
+        # ==============================
 
         prediction = model.predict(
             X_final
@@ -752,26 +767,70 @@ elif page == "🔮 Prédiction":
         )[0]
 
 
+        # ==============================
+        # ENREGISTREMENT HISTORIQUE
+        # ==============================
 
-        # ==========================
-        # AFFICHAGE RESULTAT
-        # ==========================
+        nouvelle_demande = pd.DataFrame([{
+
+            "Date": pd.Timestamp.now().strftime(
+                "%d/%m/%Y %H:%M"
+            ),
+
+            "Gender": gender,
+            "Married": married,
+            "Dependents": dependents,
+            "Education": education,
+            "Self_Employed": self_employed,
+
+            "ApplicantIncome": applicant_income,
+
+            "CoapplicantIncome": coapplicant_income,
+
+            "LoanAmount": loan_amount,
+
+            "Loan_Amount_Term": loan_term,
+
+            "Credit_History": credit_history,
+
+            "Property_Area": property_area,
+
+            "Decision":
+                "Approuvé" if prediction == 1 else "Refusé",
+
+            "Probabilité approbation":
+                round(probability[1] * 100, 2),
+
+            "Confiance":
+                round(max(probability) * 100, 2)
+
+        }])
 
 
-        st.divider()
-
-
-        st.subheader(
-            "Résultat de la prédiction"
+        st.session_state.historique_predictions = pd.concat(
+            [
+                st.session_state.historique_predictions,
+                nouvelle_demande
+            ],
+            ignore_index=True
         )
 
 
-        col1,col2 = st.columns(2)
+        # ==============================
+        # AFFICHAGE RESULTAT
+        # ==============================
 
+        st.divider()
+
+        st.subheader(
+            "🎯 Résultat de la prédiction"
+        )
+
+
+        col1, col2 = st.columns(2)
 
 
         with col1:
-
 
             if prediction == 1:
 
@@ -804,9 +863,7 @@ elif page == "🔮 Prédiction":
             )
 
 
-
         with col2:
-
 
             fig = go.Figure(
                 go.Indicator(
@@ -821,13 +878,10 @@ elif page == "🔮 Prédiction":
                     },
 
                     gauge={
-
                         "axis":{
                             "range":[0,100]
                         }
-
                     }
-
                 )
             )
 
@@ -841,3 +895,14 @@ elif page == "🔮 Prédiction":
                 fig,
                 use_container_width=True
             )
+
+
+        st.success(
+            "✅ La demande a été enregistrée dans l'historique."
+        )
+
+
+        # Bouton nouvelle prédiction
+        if st.button(" Nouvelle prédiction"):
+
+            st.rerun()
