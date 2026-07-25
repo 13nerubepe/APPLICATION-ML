@@ -679,13 +679,13 @@ elif page == "🔮 Prédiction":
 
 
 
-        if submitted:
+    if submitted:
 
         # ==============================
         # CREATION DES DONNEES CLIENT
         # ==============================
 
-            new_data = pd.DataFrame([{
+        new_data = pd.DataFrame([{
 
             "Gender": gender,
             "Married": married,
@@ -699,7 +699,7 @@ elif page == "🔮 Prédiction":
             "Credit_History": 1.0 if credit_history == "Oui" else 0.0,
             "Property_Area": property_area
 
-            }])
+        }])
 
 
         var_num = [
@@ -784,7 +784,6 @@ elif page == "🔮 Prédiction":
             "Self_Employed": self_employed,
 
             "ApplicantIncome": applicant_income,
-
             "CoapplicantIncome": coapplicant_income,
 
             "LoanAmount": loan_amount,
@@ -823,7 +822,7 @@ elif page == "🔮 Prédiction":
         st.divider()
 
         st.subheader(
-            "🎯 Résultat de la prédiction"
+            "Résultat de la prédiction"
         )
 
 
@@ -835,13 +834,13 @@ elif page == "🔮 Prédiction":
             if prediction == 1:
 
                 st.success(
-                    "## ✅ PRÊT APPROUVÉ"
+                    "##  PRÊT APPROUVÉ"
                 )
 
             else:
 
                 st.error(
-                    "## ❌ PRÊT REFUSÉ"
+                    "##  PRÊT REFUSÉ"
                 )
 
 
@@ -902,7 +901,6 @@ elif page == "🔮 Prédiction":
         )
 
 
-        # Bouton nouvelle prédiction
-        if st.button(" Nouvelle prédiction"):
+        if st.button("🔄 Nouvelle prédiction"):
 
             st.rerun()
